@@ -1,5 +1,9 @@
 applyKotlinJVM()
 
+apply plugin: 'application'
+
+mainClassName = 'noria.swing.MainKt'
+
 dependencies {
     compile project(':noria-common')
     compile project(':noria-jvm')
