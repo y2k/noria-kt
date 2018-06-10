@@ -16,3 +16,4 @@ out/
 .gradle
 build/
 *.iml
+.idea

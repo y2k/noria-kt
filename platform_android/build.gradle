@@ -21,6 +21,10 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    packagingOptions {
+        exclude 'META-INF/library_release.kotlin_module'
+        exclude 'META-INF/main.kotlin_module'
+    }
 }
 
 repositories {
@@ -29,5 +33,8 @@ repositories {
 }
 
 dependencies {
+    implementation project(':noria-common')
+    implementation project(':noria-jvm')
+
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 }
