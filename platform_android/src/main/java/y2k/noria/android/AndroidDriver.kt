@@ -1,12 +1,15 @@
 package y2k.noria.android
 
-import android.app.Activity
 import android.content.Context
+import android.os.Handler
+import android.os.Looper
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import noria.Host
 import noria.Update
+import y2k.noriaandroid.BuildConfig
 import kotlin.reflect.KFunction
 import kotlin.reflect.KMutableProperty
 import kotlin.reflect.full.memberFunctions
@@ -14,26 +17,31 @@ import kotlin.reflect.full.memberProperties
 
 class AndroidDriver(private val context: Context) : Host {
 
+    private val handle = Handler(Looper.getMainLooper())
     private val roots = mutableMapOf<String?, Any>()
     private val nodes = mutableMapOf<Int, Any>()
 
     override fun applyUpdates(updates: List<Update>) {
-        val dirtyComponents = mutableSetOf<View>()
+        handle.post {
+            val dirtyComponents = mutableSetOf<View>()
 
-        for (u in updates) {
-            when (u) {
-                is Update.MakeNode -> makeNode(u)
-                is Update.SetAttr -> setAttr(u)
-                is Update.SetNodeAttr -> setNodeAttr(u)
-                is Update.SetCallback -> setCallback(u)
-                is Update.RemoveCallback -> removeCallback(u)
-                is Update.Add -> add(u, dirtyComponents)
-                is Update.Remove -> remove(u, dirtyComponents)
-                is Update.DestroyNode -> destroyNode(u)
+            for (u in updates) {
+                logUpdate(u)
+
+                when (u) {
+                    is Update.MakeNode -> makeNode(u)
+                    is Update.SetAttr -> setAttr(u)
+                    is Update.SetNodeAttr -> setNodeAttr(u)
+                    is Update.SetCallback -> setCallback(u)
+                    is Update.RemoveCallback -> removeCallback(u)
+                    is Update.Add -> add(u, dirtyComponents)
+                    is Update.Remove -> remove(u, dirtyComponents)
+                    is Update.DestroyNode -> destroyNode(u)
+                }
             }
-        }
 
-        dirtyComponents.forEach(View::invalidate)
+            dirtyComponents.forEach(View::invalidate)
+        }
     }
 
     private fun makeNode(u: Update.MakeNode) {
@@ -101,10 +109,12 @@ class AndroidDriver(private val context: Context) : Host {
             ?: (node::class.memberProperties.find { it.name == attr } as? KMutableProperty<Any?>)?.setter
     }
 
-    fun registerRoot(id: String, activity: Activity) {
-        val root = FrameLayout(activity)
+    fun registerRoot(id: String, root: FrameLayout) {
         roots[id] = root
+    }
 
-        activity.setContentView(root)
+    private fun logUpdate(u: Update) {
+        if (BuildConfig.DEBUG)
+            Log.d("AndroidDriver", "update = $u")
     }
 }

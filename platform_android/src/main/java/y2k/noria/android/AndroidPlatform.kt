@@ -1,6 +1,9 @@
 package y2k.noria.android
 
 import android.content.Context
+import android.text.Editable
+import android.text.TextWatcher
+import android.view.inputmethod.EditorInfo
 import android.widget.EditText
 import android.widget.TextView
 import com.google.android.flexbox.FlexDirection.*
@@ -21,15 +24,6 @@ object AndroidPlatform : Platform() {
 
     init {
         register(Root, ::AndroidRoot)
-
-//        register(HBox, FlexboxLayout::class) { props ->
-//            set(FlexboxLayout::setFlexDirection, props.flexDirection.toFlexboxLayout())
-//        }
-//
-//        register(VBox, FlexboxLayout::class) { props ->
-//            set(FlexboxLayout::setFlexDirection, props.flexDirection.toFlexboxLayout())
-//        }
-
         register(HBox, ::FlexBox)
         register(VBox, ::FlexBox)
 
@@ -45,12 +39,15 @@ object AndroidPlatform : Platform() {
         register(TextField, NTextField::class) { props ->
             set(NTextField::setStringText, props.bind.getter.call())
             set(NTextField::setEnabled, !props.disabled)
+            set(NTextField::onTextChanged, props.bind::set)
+            set(NTextField::events, props.events)
         }
 
         register(CheckBox, NCheckBox::class) { props ->
             set(NCheckBox::setStringText, props.text)
             set(NCheckBox::setChecked, props.bind.getter.call())
             set(NCheckBox::setEnabled, !props.disabled)
+            set(NCheckBox::onChange, props.bind::set)
         }
     }
 
@@ -81,12 +78,46 @@ class NButton(context: Context?) : android.widget.Button(context) {
 
 class NTextField(context: Context?) : EditText(context) {
 
-    fun setStringText(x: String) {
-        setText(x, BufferType.NORMAL)
+    var onTextChanged: ((newText: String) -> Unit)? = null
+    var events: Events? = null
+    val currentText: String get() = text.toString()
+
+    init {
+        setSingleLine()
+
+        addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) = Unit
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                onTextChanged?.invoke(s.toString())
+            }
+        })
+
+        setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_DONE) {
+                events?.onEnter?.invoke()
+            }
+            false
+        }
+    }
+
+    fun setStringText(t: String) {
+        if (t != currentText) {
+            setText(t, BufferType.NORMAL)
+        }
     }
 }
 
 class NCheckBox(context: Context?) : android.widget.CheckBox(context) {
+
+    var onChange: ((v: Boolean) -> Unit)? = null
+
+    init {
+        setOnCheckedChangeListener { _, isChecked ->
+            onChange?.invoke(isChecked)
+        }
+    }
 
     fun setStringText(x: String) {
         text = x
