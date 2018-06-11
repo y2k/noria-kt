@@ -20,6 +20,7 @@ task clean(type: Delete) {
 
 allprojects {
     repositories {
+        google()
         maven { url "https://dl.bintray.com/kotlin/kotlin-dev" }
         mavenCentral()
         jcenter()

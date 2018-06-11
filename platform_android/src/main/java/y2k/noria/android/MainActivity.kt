@@ -16,9 +16,10 @@ class MainActivity : Activity() {
     }
 
     private fun initNoria() {
-        GraphState(AndroidPlatform, AndroidDriver().apply {
-            registerRoot(this@MainActivity)
-        }).apply {
+        val driver = AndroidDriver(this)
+        driver.registerRoot("app", this)
+
+        GraphState(AndroidPlatform, driver).apply {
             mount("app") {
                 x(::DemoAppComponent, DemoAppProps())
             }
