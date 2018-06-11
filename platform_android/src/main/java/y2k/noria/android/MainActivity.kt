@@ -6,7 +6,6 @@ import noria.GraphState
 import noria.demo.DemoAppComponent
 import noria.demo.DemoAppProps
 import noria.x
-import y2k.noria.android.AndroidDriver.registerRoot
 
 class MainActivity : Activity() {
 
@@ -17,7 +16,7 @@ class MainActivity : Activity() {
     }
 
     private fun initNoria() {
-        GraphState(AndroidDriver, AndroidPlatform().apply {
+        GraphState(AndroidPlatform, AndroidDriver().apply {
             registerRoot(this@MainActivity)
         }).apply {
             mount("app") {
