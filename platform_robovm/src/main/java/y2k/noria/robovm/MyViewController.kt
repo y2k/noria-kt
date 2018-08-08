@@ -1,29 +1,37 @@
 package y2k.noria.robovm
 
+import noria.GraphState
+import noria.demo.DemoAppComponent
+import noria.demo.DemoAppProps
+import noria.x
 import org.robovm.apple.coregraphics.CGRect
 import org.robovm.apple.uikit.NSTextAlignment
 import org.robovm.apple.uikit.UIButton
 import org.robovm.apple.uikit.UIButtonType
 import org.robovm.apple.uikit.UIColor
-import org.robovm.apple.uikit.UIControl
 import org.robovm.apple.uikit.UIControlState
-import org.robovm.apple.uikit.UIEvent
 import org.robovm.apple.uikit.UIFont
 import org.robovm.apple.uikit.UILabel
-import org.robovm.apple.uikit.UIView
 import org.robovm.apple.uikit.UIViewController
 
 class MyViewController : UIViewController() {
 
-    fun foo(root: Any) {
+    private fun initNoria() {
+//        val root = FrameLayout(this)
+        val root = Any()
+//        setContentView(root)
+
         val driver = RobovmDriver()
         driver.registerRoot("app", root)
+
+        GraphState(RobovmPlatform, driver).apply {
+            mount("app") {
+                x(::DemoAppComponent, DemoAppProps())
+            }
+        }
     }
 
     init {
-        // Get the view of this view controller.
-        val view = view
-
         // Setup background.
         view.backgroundColor = UIColor.white()
 
